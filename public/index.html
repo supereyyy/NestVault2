@@ -229,6 +229,9 @@ h1, h2 { background:linear-gradient(90deg, #fff 30%, rgb(var(--a300)) 60%, #fff 
 .gz.off { background:transparent; border:1px dashed rgb(129 140 248 / .6); color:#a5b4fc; box-shadow:none; font-weight:700; }
 .gz.off:hover { border-color:#e879f9; color:#f5d0fe; box-shadow:0 0 12px -3px rgb(232 121 249 / .6); }
 .gz-sel { background:linear-gradient(135deg, #22d3ee, #818cf8, #e879f9) !important; color:#0b1220 !important; border-color:transparent !important; box-shadow:0 0 12px -2px rgb(129 140 248 / .8); }
+.nest-dragging{opacity:.45}
+.nest-over{box-shadow:inset 0 0 0 2px rgb(var(--a400))}
+tr.nest-over > td{box-shadow:inset 0 2px 0 rgb(var(--a400))}
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950">
@@ -316,6 +319,7 @@ h1, h2 { background:linear-gradient(90deg, #fff 30%, rgb(var(--a300)) 60%, #fff 
     </div>
     <div class="flex flex-wrap items-center gap-3 text-xs">
       <button onclick="openAddHeroModal()" class="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 font-bold rounded-lg transition flex items-center gap-1.5 active:scale-95"><i class="fa-solid fa-user-plus"></i> Tambah Hero</button>
+      <button onclick="openNestModal()" class="px-3 py-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 font-bold rounded-lg transition flex items-center gap-1.5 active:scale-95"><i class="fa-solid fa-dungeon"></i> Tambah Nest</button>
       <button id="btnSetAllFresh" class="text-xs text-emerald-400 hover:underline font-medium">Set Semua Fresh</button>
       <span class="text-slate-700">/</span>
       <button id="btnSetAllLimit" class="text-xs text-rose-400 hover:underline font-medium">Set Semua Limit</button>
@@ -325,21 +329,7 @@ h1, h2 { background:linear-gradient(90deg, #fff 30%, rgb(var(--a300)) 60%, #fff 
   <div class="bg-slate-900/90 border border-slate-800/80 rounded-xl overflow-hidden shadow-2xl">
     <div class="overflow-x-auto">
       <table class="w-full text-left border-collapse min-w-[1400px]">
-        <thead>
-          <tr class="bg-slate-950 border-b border-slate-800/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            <th class="py-3.5 px-4 sticky left-0 bg-slate-950 z-20 min-w-[260px] border-r-2 border-slate-800/80 shadow-[4px_0_12px_rgba(0,0,0,0.6)]">HERO & CLASS ACTIONS</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">GDN C</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">GDN HC</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">GN</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">DF</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">ANU ARENDEL</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">DDN HC</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">DDN C</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">MEMO 1 (BDN)</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">MEMO 2 (BDN)</th>
-            <th class="py-3.5 px-2 text-center w-32 min-w-[130px]">MEMO 3 (BDN)</th>
-          </tr>
-        </thead>
+        <thead><tr id="nestHead" class="bg-slate-950 border-b border-slate-800/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider"></tr></thead>
         <tbody id="heroTableBody" class="divide-y divide-slate-800/60 text-sm"></tbody>
       </table>
     </div>
@@ -348,6 +338,14 @@ h1, h2 { background:linear-gradient(90deg, #fff 30%, rgb(var(--a300)) 60%, #fff 
 
 <!-- PAGE 2: LZ MANIA -->
 <div id="pageLzMania" class="hidden space-y-6">
+  <div class="hud-card rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 border-amber-500/20">
+    <div class="flex items-center gap-2 text-sm font-bold text-white"><i class="fa-solid fa-calendar-week text-amber-400"></i> Periode LZ Mania</div>
+    <div class="flex items-center gap-2">
+      <button type="button" onclick="lzStepWeek(1)" class="btn btn-sec btn-icon" aria-label="Minggu sebelumnya" title="Minggu sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
+      <select id="lzWeekSelect" onchange="setLzWeek(this.value)" class="inp inp-sm w-auto min-w-[200px]"></select>
+      <button type="button" onclick="lzStepWeek(-1)" class="btn btn-sec btn-icon" aria-label="Minggu berikutnya" title="Minggu berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>
   <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
     <div class="hud-card rounded-xl p-4 flex items-center gap-3.5 border-amber-400/30"><div class="p-3 bg-amber-400/10 text-amber-300 rounded-xl border border-amber-400/30"><i class="fa-solid fa-coins text-xl"></i></div><div><p class="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">Total Gold</p><p id="lzTotalGold" class="text-xl font-extrabold text-amber-300">0</p><p id="lzTotalGoldSub" class="text-[10px] text-slate-400 mt-0.5">Drop gold 0 + nilai item 0</p></div></div>
     <div class="hud-card rounded-xl p-4 flex items-center gap-3.5 border-amber-500/20"><img data-icon="CB" alt="CB" class="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-700/60 shadow-lg"><div><p class="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">Total Card Box</p><p id="lzTotalCB" class="text-xl font-extrabold text-amber-400">0</p></div></div>
@@ -363,7 +361,8 @@ h1, h2 { background:linear-gradient(90deg, #fff 30%, rgb(var(--a300)) 60%, #fff 
     </div>
     <form id="lzForm" onsubmit="addLzEntry(event)" oninput="updateLzPreview()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3.5 items-end">
       <div class="lg:col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Pilih Hero / Karakter:</label><select id="lzHeroSelect" required class="inp"></select></div>
-      <div><label class="block text-xs font-semibold text-amber-300 mb-1">GOLD:</label><input type="number" min="0" id="lzInputGold" value="0" inputmode="numeric" onfocus="this.select()" class="inp font-num font-bold"></div>
+      <div><label class="block text-xs font-semibold text-amber-300 mb-1">GOLD:</label><input type="number" id="lzInputGold" min="0" step="1" inputmode="numeric" placeholder="0" onfocus="this.select()" class="inp font-num font-bold text-amber-300">
+        <div class="flex flex-wrap gap-1 mt-1.5"><button type="button" onclick="setLzGold(25)" class="font-num px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 hover:border-amber-500 hover:text-amber-300 transition">25</button><button type="button" onclick="setLzGold(30)" class="font-num px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 hover:border-amber-500 hover:text-amber-300 transition">30</button><button type="button" onclick="setLzGold(35)" class="font-num px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 hover:border-amber-500 hover:text-amber-300 transition">35</button><button type="button" onclick="setLzGold(40)" class="font-num px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 hover:border-amber-500 hover:text-amber-300 transition">40</button><button type="button" onclick="setLzGold(45)" class="font-num px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 hover:border-amber-500 hover:text-amber-300 transition">45</button><button type="button" onclick="setLzGold(50)" class="font-num px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-300 hover:border-amber-500 hover:text-amber-300 transition">50</button></div></div>
       <div><label class="block text-xs font-semibold text-amber-400 mb-1">CARD BOX:</label><input type="hidden" id="lzInputCB" value="0"><div data-lzpicker="CB" class="relative"></div></div>
       <div><label class="block text-xs font-semibold text-emerald-400 mb-1">EOL:</label><input type="hidden" id="lzInputEOL" value="0"><div data-lzpicker="EOL" class="relative"></div></div>
       <div><label class="block text-xs font-semibold text-purple-400 mb-1">FD:</label><input type="hidden" id="lzInputFD" value="0"><div data-lzpicker="FD" class="relative"></div></div>
@@ -479,6 +478,28 @@ h1, h2 { background:linear-gradient(90deg, #fff 30%, rgb(var(--a300)) 60%, #fff 
 </main>
 
 <!-- Modal Hero -->
+<div id="nestModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <h3 class="text-base font-bold text-white flex items-center gap-2"><i class="fa-solid fa-dungeon text-amber-400"></i> Tambah Nest Baru</h3>
+      <button onclick="closeNestModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 mb-1">Nama Nest:</label>
+      <div class="flex gap-2"><input type="text" id="nestNameInput" maxlength="24" placeholder="Contoh: DDN EX" class="inp" onkeydown="if(event.key==='Enter'){event.preventDefault();addNestFromModal()}">
+      <button onclick="addNestFromModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-bold whitespace-nowrap"><i class="fa-solid fa-plus"></i> Tambah</button></div>
+      <p class="text-[11px] text-slate-500 mt-1.5">Nest baru muncul sebagai kolom paling kanan dan otomatis FRESH untuk semua hero. Urutan bisa digeser di daftar bawah atau langsung di header tabel.</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">Urutan nest <span class="normal-case tracking-normal font-medium">(tahan ikon ⋮⋮ lalu geser)</span></p>
+      <div id="nestCustomList" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+    </div>
+    <div class="flex justify-end pt-3 border-t border-slate-800">
+      <button onclick="closeNestModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <div id="heroModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
   <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -734,7 +755,16 @@ const initialHeroes = [
   {name:"YajokSiam",job:"Sorceress"},{name:"iWilliam",job:"Archer"},{name:"Fredrrin",job:"Assassin"},{name:"Krathosz",job:"Kali"},
   {name:"Shoyuu",job:"Lencea"},{name:"Shiyen",job:"Machina"},{name:"NearDN",job:"Cleric"},{name:"Poisonate",job:"Sorceress"},{name:"FallenFury",job:"Vandar"}
 ];
-const nestList = ["GDN C", "GDN HC", "GN", "DF", "ANU ARENDEL", "DDN HC", "DDN C", "MEMO 1 (BDN)", "MEMO 2 (BDN)", "MEMO 3 (BDN)"];
+const BASE_NESTS = ["GN", "DF", "ANU ARENDEL", "DDN HC", "DDN C", "MEMO 1 (BDN)", "MEMO 2 (BDN)", "MEMO 3 (BDN)"];
+let customNests = [];
+let nestList = [...BASE_NESTS];
+let nestOrder = [];
+function rebuildNests() {
+  const all = [...BASE_NESTS, ...customNests.filter(n => !BASE_NESTS.includes(n))];
+  const ord = (nestOrder || []).filter(n => all.includes(n));
+  nestList = [...ord, ...all.filter(n => !ord.includes(n))];
+  nestOrder = nestList.slice();
+}
 
 let heroList = [], nestState = {}, heroLogos = {}, lzData = [], weeklyItems = [], itemPrices = {};
 let activeLogoTarget = null, selectedPresetIcon = null, isAudioMuted = false, editingHeroName = null, activePage = 'tracker', audioCtx = null, weeklyViewCycle = null;
@@ -964,6 +994,7 @@ function renderLzPop(k) {
       ${c.opts.map(n => `<button type="button" onclick="pickLzValue('${k}', ${n})" class="font-num h-9 rounded-lg border text-xs font-bold transition ${n === cur ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-800 text-slate-200 border-slate-700 hover:border-amber-500 hover:text-amber-300'}">${n}</button>`).join('')}
     </div>`;
 }
+function setLzGold(n) { const el = $('lzInputGold'); el.value = n; updateLzPreview(); el.focus(); }
 function closeLzPickers() { document.querySelectorAll('[id^="lzPop"]').forEach(p => p.classList.add('hidden')); }
 function toggleLzPicker(k, e) {
   e.stopPropagation();
@@ -1120,6 +1151,8 @@ function updateHeaderLogoDisplay() {
 function pruneNests() { Object.keys(nestState || {}).forEach(h => Object.keys(nestState[h] || {}).forEach(n => { if (!nestList.includes(n)) delete nestState[h][n]; })); }
 function loadData() {
   heroList = readLS('dn_hero_list_v2', null) || [...initialHeroes];
+  customNests = readLS('dn_custom_nests_v1', []); if (!Array.isArray(customNests)) customNests = [];
+  nestOrder = readLS('dn_nest_order_v1', []); if (!Array.isArray(nestOrder)) nestOrder = []; rebuildNests();
   nestState = readLS('dn_hero_nest_tracker_v1', null);
   if (!nestState) initDefaultState();
   pruneNests();
@@ -1136,6 +1169,8 @@ function loadData() {
 function saveData() {
   localStorage.setItem('dn_hero_list_v2', JSON.stringify(heroList));
   localStorage.setItem('dn_hero_nest_tracker_v1', JSON.stringify(nestState));
+  localStorage.setItem('dn_custom_nests_v1', JSON.stringify(customNests));
+  localStorage.setItem('dn_nest_order_v1', JSON.stringify(nestOrder));
   localStorage.setItem('dn_lz_mania_v1', JSON.stringify(lzData));
   localStorage.setItem('dn_weekly_items_v1', JSON.stringify(weeklyItems));
   updateStats();
@@ -1155,6 +1190,32 @@ function updateStats() {
   $('statProgress').innerText = (total ? Math.round(limit/total*100) : 0) + '%';
 }
 
+/* ---------- LZ Mania per minggu (reset Sabtu 08:00 WIB) ---------- */
+let lzViewCycle = null, lzCycleOrder = [];
+function cycleAt(ms) {
+  const w = new Date(ms + 7*3600*1000), day = w.getUTCDay(), hour = w.getUTCHours();
+  let since = (day + 1) % 7; if (day === 6 && hour < 8) since = 7;
+  const last = new Date(Date.UTC(w.getUTCFullYear(), w.getUTCMonth(), w.getUTCDate() - since, 8, 0, 0, 0));
+  return { id: `RESET_${last.getUTCFullYear()}_${last.getUTCMonth()+1}_${last.getUTCDate()}`, start: last.getTime() - 7*3600*1000 };
+}
+const cycleStartOf = id => { const p = id.split('_'); return Date.UTC(+p[1], +p[2] - 1, +p[3], 8, 0, 0, 0) - 7*3600*1000; };
+const lzCurCycle = () => getWibInfo().cycleId;
+const lzSelCycle = () => lzViewCycle || lzCurCycle();
+const lzViewData = () => { const c = lzSelCycle(); return c === 'ALL' ? lzData : lzData.filter(i => cycleAt(i.id).id === c); };
+function renderLzWeekSelect() {
+  const sel = $('lzWeekSelect'); if (!sel) return;
+  const cur = lzCurCycle(), map = {}; map[cur] = cycleAt(Date.now()).start;
+  lzData.forEach(i => { const c = cycleAt(i.id); map[c.id] = c.start; });
+  lzCycleOrder = Object.keys(map).sort((a, b) => map[b] - map[a]);
+  const selId = lzSelCycle();
+  sel.innerHTML = lzCycleOrder.map(c => `<option value="${c}" ${c === selId ? 'selected' : ''}>${wkLabel(c)}${c === cur ? ' (minggu ini)' : ''}</option>`).join('') + `<option value="ALL" ${selId === 'ALL' ? 'selected' : ''}>Semua minggu</option>`;
+}
+function setLzWeek(v) { lzViewCycle = (v === lzCurCycle()) ? null : v; lzDayFilter = null; renderLzTable(); }
+function lzStepWeek(dir) {
+  const sel = lzSelCycle(); if (sel === 'ALL') return;
+  const i = lzCycleOrder.indexOf(sel), n = lzCycleOrder[i + dir]; if (n) setLzWeek(n);
+}
+
 /* ---------- LZ Mania ---------- */
 function populateLzHeroSelect() {
   const s = $('lzHeroSelect'); const cur = s.value;
@@ -1168,8 +1229,9 @@ function addLzEntry(e) {
   const v = id => parseInt($(id).value) || 0;
   lzData.unshift({ id: Date.now(), heroName, gold: v('lzInputGold'), cb: v('lzInputCB'), eol: v('lzInputEOL'), pd: v('lzInputPD'), fd: v('lzInputFD'), itemGold: calcLzItemGold(v('lzInputCB'), v('lzInputEOL'), v('lzInputPD'), v('lzInputFD')),
     timestamp: new Date().toLocaleString('id-ID', {dateStyle:'short', timeStyle:'short'}) });
+  if (lzSelCycle() !== lzCurCycle()) { lzViewCycle = null; lzDayFilter = null; }
   saveData(); renderLzTable();
-  ['Gold','CB','EOL','PD','FD'].forEach(k => $('lzInput'+k).value = "0");
+  $('lzInputGold').value = ''; ['CB','EOL','PD','FD'].forEach(k => $('lzInput'+k).value = "0");
   syncLzPickers();
   updateLzPreview();
   playSound('fresh'); showToast(`Loot LZ untuk ${heroName} berhasil dicatat!`);
@@ -1232,7 +1294,7 @@ function setLzDay(k) { lzDayFilter = (lzDayFilter === k) ? null : k; renderLzTab
 function renderLzDaily() {
   applyLzDayOpen();
   const days = {};
-  lzData.forEach(i => { const k = lzDayKey(i.id), d = days[k] || (days[k] = {t:0, g:0, n:0, cb:0, eol:0, pd:0, fd:0});
+  lzViewData().forEach(i => { const k = lzDayKey(i.id), d = days[k] || (days[k] = {t:0, g:0, n:0, cb:0, eol:0, pd:0, fd:0});
     d.t += (i.gold||0) + (i.itemGold||0); d.g += (i.gold||0); d.n++; ['cb','eol','pd','fd'].forEach(x => d[x] += i[x]||0); });
   const keys = Object.keys(days).map(Number).sort((a, b) => b - a), today = lzDayKey(Date.now());
   const max = Math.max(1, ...keys.map(k => days[k].t)), tot = keys.reduce((a, k) => a + days[k].t, 0);
@@ -1241,16 +1303,17 @@ function renderLzDaily() {
   const sendBtn = `<button onclick="sendLzDayGold()" class="btn btn-primary" style="padding:.3rem .7rem;font-size:11px" ${pend ? '' : 'disabled'}><i class="fa-solid fa-coins"></i> Kirim drop gold hari ini${pend ? ' (' + fmt(pend) + ')' : ''}</button>`;
   $('lzDayStats').innerHTML = keys.length ? chip('Hari ini', fmt(days[today] ? days[today].t : 0), 'text-amber-300') + chip('Rata-rata/hari', fmt(Math.round(tot / keys.length)), 'text-white') + chip('Terbaik', fmt(max), 'text-emerald-400') + sendBtn : '';
   // grafik 7 hari terakhir
-  const last7 = Array.from({length: 7}, (_, n) => today - 6 + n), m7 = Math.max(1, ...last7.map(k => days[k] ? days[k].t : 0));
-  $('lzDayChart').innerHTML = '<div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">7 hari terakhir</div><div class="grid grid-cols-7 gap-2 items-end h-28">' + last7.map(k => {
+  const selC = lzSelCycle(), weekMode = selC !== 'ALL', wkStart = weekMode ? lzDayKey(cycleStartOf(selC)) : 0;
+  const last7 = weekMode ? Array.from({length: 7}, (_, n) => wkStart + n) : Array.from({length: 7}, (_, n) => today - 6 + n), m7 = Math.max(1, ...last7.map(k => days[k] ? days[k].t : 0));
+  $('lzDayChart').innerHTML = `<div class="text-[10px] font-bold tracking-widest text-slate-500 uppercase mb-2">${weekMode ? wkLabel(selC) + ' (Sabtu – Jumat)' : '7 hari terakhir'}</div>`+'<div class="grid grid-cols-7 gap-2 items-end h-28">' + last7.map(k => {
     const t = days[k] ? days[k].t : 0, h = t ? Math.max(6, t / m7 * 100) : 3, on = lzDayFilter === k;
     return `<button onclick="setLzDay(${k})" class="group flex flex-col items-center justify-end h-full gap-1" title="${lzDayLabel(k)}: ${fmt(t)}"><span class="font-num text-[9px] ${t ? 'text-amber-300' : 'text-slate-600'}">${t ? fmt(t) : '-'}</span><span class="w-full rounded-t-md transition-all ${k === today ? 'bg-amber-400' : 'bg-amber-500/50 group-hover:bg-amber-500'} ${on ? 'ring-2 ring-amber-300' : ''}" style="height:${h}%"></span></button>`; }).join('') + '</div><div class="grid grid-cols-7 gap-2 mt-1.5">' + last7.map(k => `<span class="text-center text-[9px] text-slate-500">${lzDayLabel(k).split(',')[0].split(' ')[0]}</span>`).join('') + '</div>';
   // ringkasan siklus weekly
-  const wi = getWibInfo(), startMs = wi.nextResetWibMs - 7 * 86400000 - 7 * 3600000;
-  const inc = lzData.filter(i => i.id >= startMs).reduce((a, i) => a + (i.gold||0) + (i.itemGold||0), 0);
-  const exp = weeklyItems.filter(i => i.cycle === wi.cycleId && (i.type || 'out') === 'out').reduce((a, i) => a + (i.price||0) * (i.qty||1), 0), net = inc - exp;
+  const inc = lzViewData().reduce((a, i) => a + (i.gold||0) + (i.itemGold||0), 0);
+  const exp = weeklyItems.filter(i => (selC === 'ALL' || i.cycle === selC) && (i.type || 'out') === 'out').reduce((a, i) => a + (i.price||0) * (i.qty||1), 0), net = inc - exp;
+  const wLbl = selC === 'ALL' ? 'semua minggu' : (selC === lzCurCycle() ? 'minggu ini' : 'minggu dipilih');
   const box = (l, v, c) => `<div class="rounded-xl bg-slate-950/60 border border-slate-800 px-3 py-2"><div class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">${l}</div><div class="font-num text-sm sm:text-base font-extrabold ${c}">${v}</div></div>`;
-  $('lzWeekSummary').innerHTML = box('Masuk minggu ini', fmt(inc), 'text-amber-300') + box('Keluar minggu ini', fmt(exp), 'text-rose-400') + box('Selisih', (net >= 0 ? '+' : '') + fmt(net), net >= 0 ? 'text-emerald-400' : 'text-rose-400');
+  $('lzWeekSummary').innerHTML = box('Masuk ' + wLbl, fmt(inc), 'text-amber-300') + box('Keluar ' + wLbl, fmt(exp), 'text-rose-400') + box('Selisih', (net >= 0 ? '+' : '') + fmt(net), net >= 0 ? 'text-emerald-400' : 'text-rose-400');
   $('lzDailyList').innerHTML = keys.length ? keys.map(k => { const d = days[k], on = lzDayFilter === k;
     return `<button onclick="setLzDay(${k})" class="w-full text-left rounded-lg border px-3 py-2 transition ${on ? 'bg-amber-500/15 border-amber-500/50' : 'bg-slate-950/50 border-slate-800 hover:border-slate-600'}">
       <span class="flex items-center justify-between gap-2"><span class="text-xs font-bold text-white">${lzDayLabel(k)}${k === today ? ' <span class="ml-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-extrabold">HARI INI</span>' : ''}</span><span class="font-num text-sm font-extrabold text-amber-300">${fmt(d.t)}</span></span>
@@ -1259,10 +1322,11 @@ function renderLzDaily() {
     : '<p class="text-xs text-slate-500 py-3 text-center">Belum ada catatan loot. Input hasil loot di atas untuk melihat penghasilan per hari.</p>';
 }
 function renderLzTable() {
+  renderLzWeekSelect();
   const tbody = $('lzTableBody'); tbody.innerHTML = '';
   const q = ($('lzSearchInput').value || '').toLowerCase();
   const sum = {gold:0, cb:0, eol:0, pd:0, fd:0}; let sumItem = 0;
-  lzData.forEach(i => {
+  lzViewData().forEach(i => {
     Object.keys(sum).forEach(k => sum[k] += i[k] || 0); sumItem += i.itemGold || 0;
     if (q && !i.heroName.toLowerCase().includes(q)) return;
     if (lzDayFilter !== null && lzDayKey(i.id) !== lzDayFilter) return;
@@ -1503,6 +1567,75 @@ function renderPrices() {
   updatePriceSummary();
 }
 
+/* ---------- Tambah / hapus Nest ---------- */
+function renderNestHead() {
+  const t = $('nestHead'); if (!t) return;
+  t.innerHTML = `<th class="py-3.5 px-4 sticky left-0 bg-slate-950 z-20 min-w-[260px] border-r-2 border-slate-800/80 shadow-[4px_0_12px_rgba(0,0,0,0.6)]">HERO & CLASS ACTIONS</th>` +
+    nestList.map(n => `<th data-nest="${n}" class="nest-th py-3.5 px-2 text-center w-32 min-w-[130px]"><span class="inline-flex items-center justify-center gap-1.5"><i class="fa-solid fa-grip-vertical nest-grip cursor-grab text-slate-600 hover:text-amber-400 transition" style="touch-action:none" title="Tahan dan geser untuk mengubah urutan"></i>${n}</span></th>`).join('');
+  const tbl = t.closest('table'); if (tbl) tbl.style.minWidth = (260 + nestList.length * 130) + 'px';
+  bindNestDrag(t, '.nest-th');
+}
+function renderNestModalList() {
+  const el = $('nestCustomList'); if (!el) return;
+  el.innerHTML = nestList.map(n => {
+    const ci = customNests.indexOf(n);
+    return `<div data-nest="${n}" class="nest-item flex items-center justify-between rounded-lg bg-slate-950/60 border border-slate-800 px-3 py-2"><span class="flex items-center gap-2.5 text-xs font-bold text-white"><i class="fa-solid fa-grip-vertical nest-grip cursor-grab text-slate-500 hover:text-amber-400 px-1" style="touch-action:none" title="Tahan dan geser"></i>${n}${ci < 0 ? '<span class="text-[9px] font-semibold text-slate-500">bawaan</span>' : ''}</span>${ci >= 0 ? `<button onclick="deleteCustomNest(${ci})" class="text-slate-500 hover:text-rose-400 p-1 transition" title="Hapus nest"><i class="fa-solid fa-trash"></i></button>` : ''}</div>`;
+  }).join('');
+  bindNestDrag(el, '.nest-item');
+}
+function moveNest(from, to) {
+  const fi = nestList.indexOf(from), ti = nestList.indexOf(to); if (fi < 0 || ti < 0 || fi === ti) return;
+  const arr = nestList.slice(); arr.splice(fi, 1); arr.splice(ti, 0, from);
+  nestOrder = arr; rebuildNests(); saveData(); renderTable();
+  if (!$('nestModal').classList.contains('hidden')) renderNestModalList();
+}
+function moveHero(from, to) {
+  const fi = heroList.findIndex(h => h.name === from), ti = heroList.findIndex(h => h.name === to); if (fi < 0 || ti < 0 || fi === ti) return;
+  const [h] = heroList.splice(fi, 1); heroList.splice(ti, 0, h);
+  saveData(); renderTable();
+}
+function bindDragSort(root, itemSel, gripSel, key, onDrop) {
+  root.querySelectorAll(gripSel).forEach(grip => {
+    const item = grip.closest(itemSel); if (!item) return;
+    grip.addEventListener('pointerdown', e => {
+      if (e.button) return; e.preventDefault();
+      const from = item.dataset[key]; let over = null;
+      grip.setPointerCapture(e.pointerId); item.classList.add('nest-dragging');
+      const clear = () => root.querySelectorAll('.nest-over').forEach(x => x.classList.remove('nest-over'));
+      const mv = ev => {
+        clear();
+        const t = document.elementFromPoint(ev.clientX, ev.clientY), c = t && t.closest(itemSel);
+        over = c && c !== item && root.contains(c) ? c : null; if (over) over.classList.add('nest-over');
+      };
+      const end = ev => {
+        grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', end); grip.removeEventListener('pointercancel', end);
+        item.classList.remove('nest-dragging'); clear();
+        if (ev.type === 'pointerup' && over) onDrop(from, over.dataset[key]);
+      };
+      grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+    });
+  });
+}
+const bindNestDrag = (root, sel) => bindDragSort(root, sel, '.nest-grip', 'nest', moveNest);
+function openNestModal() { $('nestNameInput').value = ''; renderNestModalList(); $('nestModal').classList.remove('hidden'); setTimeout(() => $('nestNameInput').focus(), 50); }
+function closeNestModal() { $('nestModal').classList.add('hidden'); }
+function addNestFromModal() {
+  const name = $('nestNameInput').value.replace(/['"`<>\\]/g, '').trim().toUpperCase();
+  if (!name) return showToast("Nama nest tidak boleh kosong!", true);
+  if (nestList.some(n => n.toLowerCase() === name.toLowerCase())) return showToast("Nama nest sudah ada!", true);
+  customNests.push(name); rebuildNests();
+  heroList.forEach(h => { nestState[h.name] = nestState[h.name] || {}; nestState[h.name][name] = "FRESH"; });
+  saveData(); renderTable(); renderNestModalList(); $('nestNameInput').value = '';
+  playSound('fresh'); showToast(`Nest ${name} ditambahkan!`);
+}
+function deleteCustomNest(i) {
+  const name = customNests[i]; if (!name) return;
+  if (!confirm(`Hapus nest ${name}? Status nest ini untuk semua hero akan hilang.`)) return;
+  customNests.splice(i, 1); rebuildNests();
+  Object.keys(nestState).forEach(h => { if (nestState[h]) delete nestState[h][name]; });
+  saveData(); renderTable(); renderNestModalList(); showToast(`Nest ${name} dihapus`);
+}
+
 /* ---------- Nest tracker ---------- */
 function toggleNestStatus(name, nest) {
   nestState[name] = nestState[name] || {};
@@ -1527,6 +1660,7 @@ function setGlobalStatus(status, toast = true) {
   if (toast) showToast(`Semua Nest diubah ke ${status}!`);
 }
 function renderTable() {
+  renderNestHead();
   const tbody = $('heroTableBody'); tbody.innerHTML = '';
   const ft = $('searchInput').value.toLowerCase(), fc = $('filterClassSelect').value, fs = $('filterStatusSelect').value;
   heroList.forEach(hero => {
@@ -1545,6 +1679,7 @@ function renderTable() {
     let html = `
       <td class="py-2.5 px-4 font-bold text-slate-200 sticky left-0 bg-slate-900 z-10 min-w-[260px] border-r-2 border-slate-800/80 shadow-[4px_0_12px_rgba(0,0,0,0.6)] flex items-center justify-between gap-2.5">
         <div class="truncate flex items-center gap-2.5">
+          <i class="fa-solid fa-grip-vertical hero-grip shrink-0 cursor-grab text-slate-600 hover:text-amber-400 transition px-0.5" style="touch-action:none" title="Tahan dan geser untuk mengubah urutan hero"></i>
           <button onclick="openLogoModal('${name}')" title="Ubah Logo/Icon" class="shrink-0 relative group/logo">${logo}
             <div class="absolute -bottom-1 -right-1 bg-slate-950 border border-slate-700 text-amber-400 rounded-full w-4 h-4 flex items-center justify-center text-[8px] opacity-0 group-hover/logo:opacity-100 transition"><i class="fa-solid fa-pen"></i></div></button>
           <div class="truncate">
@@ -1569,8 +1704,10 @@ function renderTable() {
     });
     const tr = document.createElement('tr');
     tr.className = "hover:bg-slate-800/40 transition-colors group";
+    tr.dataset.hero = name;
     tr.innerHTML = html; tbody.appendChild(tr);
   });
+  bindDragSort(tbody, 'tr', '.hero-grip', 'hero', moveHero);
   populateLzHeroSelect();
 }
 
@@ -1621,10 +1758,14 @@ function exportDataJSON() {
   showToast("File backup JSON berhasil didownload!");
 }
 /* ---------- Backup, penyimpanan permanen & Discord ---------- */
-function buildBackup() { return { version:"1.5", savedAt:new Date().toISOString(), heroList, nestState, heroLogos, lzData, weeklyItems, itemPrices, lzPattern, goldWallet }; }
+function buildBackup() { return { version:"1.5", savedAt:new Date().toISOString(), heroList, nestState, customNests, nestOrder, heroLogos, lzData, weeklyItems, itemPrices, lzPattern, goldWallet }; }
 function applyBackupObj(p) {
   if (!(p && p.heroList && p.nestState)) return false;
-  heroList = p.heroList; nestState = p.nestState; pruneNests();
+  heroList = p.heroList; nestState = p.nestState;
+  if (Array.isArray(p.customNests)) customNests = p.customNests;
+  if (Array.isArray(p.nestOrder)) nestOrder = p.nestOrder;
+  rebuildNests();
+  pruneNests();
   if (p.heroLogos) heroLogos = p.heroLogos;
   if (p.lzData) lzData = p.lzData;
   if (p.weeklyItems) weeklyItems = p.weeklyItems;
